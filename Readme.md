@@ -1,8 +1,10 @@
 ### C-Structures
 ```Author: Guilherme Arruda```
-```Last updated: 08/oct/24```
+```Last updated: 13/oct/24```
 
 #### Set of common data structures implementation for C.
+
+#### In development: Array suport.
 
 - #### Header Flag 
 
@@ -24,10 +26,10 @@
     ```
     To generalize types support, this header use the below convention in functions passing the types using strings:
     
-    i8 : int8_t      u8 : uint8_t     f4 : float         s : char*    
-    i16: int16_t     u16: uint16_t    f8 : double        NUL: NULL
-    i32: int32_t     u32: uint32_t    f16: long double   DCT: DICT_t*
-    i64: int64_t     u64: uint64_t                       LST: LIST_t*
+    i8 : int8_t      u8 : uint8_t     f32 : float         s : char*    
+    i16: int16_t     u16: uint16_t    f64 : double        NUL: NULL
+    i32: int32_t     u32: uint32_t    f128: long double   DCT: DICT_t*
+    i64: int64_t     u64: uint64_t                        LST: LIST_t*
 
     ```
 
@@ -218,6 +220,140 @@
 
     Parameters:
         src_list  : source list
+
+    Return:
+        No return.
+    ```
+
+- #### dictionary functions
+
+    ```C
+    DICT_t* dict_create()
+
+    Create a empty dictionary.
+    ```
+
+    ```C
+    void dict_free(DICT_t** src_dict)
+
+    Clear the dictionary.
+    ```
+
+    ```C
+    void dict_print(DICT_t* src_dict)
+
+    Print the dictionary.
+    ```
+
+    ```C
+    void dict_update(DICT_t** dest_dict, const char* k_type, const char* v_type, void* key, void* value)
+
+    If key already exists, the value will be updated. If not the key-value pair will be added. 
+
+    Parameters:
+        dest_dict : modifiable dictionary (passed by reference)
+        k_type    : string of type
+        v_type    : string of type
+        key       : searched key
+        value     : value that will be added
+
+    Return:
+        No return.
+    ```
+
+    ```C
+    uint8_t dict_copy(DICT_t** dest_dict, DICT_t* src_dict)
+
+    If src_dict have same keys of dest_dict, these key-value pairs will be updated. If not, the key-value pairs will be added.
+
+    Parameters:
+        dest_dict : modifiable dictionary (passed by reference)
+        src_dict  : source dictionary
+
+    Return:
+        Count of modified values + added values.
+    ```
+
+    ```C
+    uint8_t dict_get(DICT_t* src_dict, const char* k_type, void* key, void** dest_val)
+
+    Search if especified key is in src_dict. If yes, copy the value to dest_val.
+
+    Parameters:
+        dest_val  : destination value (passed by reference)
+        k_type    : string of type
+        v_type    : string of type
+        key       : searched key
+        value     : value that will be added
+
+    Return:
+        Count of modified values + added values.
+    ```
+
+    ```C
+    uint8_t dict_values(LIST_t** dest_list, DICT_t* src_dict)
+
+    Append to dest_list all values from src_dict.
+
+    Parameters:
+        dest_list : Destination list (passed by reference)
+        src_dict  : source dictionary
+
+    Return:
+        Count of values.
+    ```
+
+    ```C
+    uint8_t dict_keys(LIST_t** dest_list, DICT_t* src_dict)
+
+    Append to dest_list all keys from src_dict.
+
+    Parameters:
+        dest_dict : Destination list (passed by reference)
+        src_dict  : source dictionary
+
+    Return:
+        Count of keys.
+    ```
+
+    ```C
+    uint8_t dict_items(LIST_t** dest_list, DICT_t* src_dict)
+
+    Append to dest_list all key-value pairs from src_dict.
+
+    Parameters:
+        dest_dict : Destination list (passed by reference)
+        src_dict  : source dictionary
+
+    Return:
+        Count of items.
+    ```
+
+    ```C
+    void dict_fromkeys(DICT_t** dest_dict, LIST_t* src_keys, void* value, const char* v_type)
+
+    Add into dest_dict the src_keys with the same value. If any key in src_keys is the same in dest_dict, these will be updated.
+
+    Parameters:
+        dest_dict : modifiable dictionary (passed by reference)
+        src_keys  : list with new keys
+        v_type    : string of type
+        value     : the value that will be assigned
+
+    Return:
+        No return.
+    ```
+
+    ```C
+    void dict_popitem(LIST_t** dest_item, DICT_t** src_dict, char* k_type, void *key)
+
+    If the searched key exists, copy the key-value pair to dest_item.
+
+    Parameters:
+        dest_item : destination list (passed by reference)
+        src_dict  : source dict (passed by reference)
+        k_type    : string of type
+        key       : searched key
 
     Return:
         No return.

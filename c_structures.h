@@ -4,7 +4,7 @@
     Author: Guilherme Arruda
 
     Created in: 28/jul/24
-    Last Updated: 08/oct/24
+    Last Updated: 13/oct/24
 */
 
 //========================================== HEADERS ============================
@@ -14,18 +14,17 @@
 
 #include <stdlib.h>
 #include <stdint.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
 
 //======================================== DATATYPES =============================
 
 
-//char s_types[15][4] = {"u8","u16","u32","u64","i8","i16","i32","i64","f4","f8","f16","s","LST","DCT","NUL"};
+//char s_types[15][4] = {"u8","u16","u32","u64","i8","i16","i32","i64","f32","f64","f128","s","LST","DCT","NUL"};
 
 typedef struct LIST_t{
     void *data;
-    char element_type[4];
+    char element_type[5];
     struct LIST_t *next;
 }LIST_t;
 
@@ -33,8 +32,8 @@ typedef struct DICT_t{
     void *key;
     void *value;
     struct DICT_t *next; 
-    char* k_type;
-    char* v_type;
+    char k_type[5];
+    char v_type[5];
 }DICT_t;
 
 //=============================== COMMON FUNCTIONS =================================    
@@ -159,95 +158,104 @@ uint8_t compare_value(void* a, void *b, const char* s_type){
 
 void set_value(void** dest_var, const char* s_type, void* value){
     uint8_t size = 0;
+
     switch (s_type[0]){
         case 'u':
         sscanf(s_type,"%*[a-z]%hhu", &size);
             switch (size){
             case 8:
                 (*dest_var) = malloc(sizeof(uint8_t));
-                *(uint8_t*)(*dest_var) = *(uint8_t*)value;
-                break;
+                memcpy(*dest_var, value, sizeof(uint8_t));
+                return;
             case 16:
                 (*dest_var) = malloc(sizeof(uint16_t));
-                *(uint16_t*)(*dest_var) = *(uint16_t*)value;
-                break;
+                memcpy(*dest_var, value, sizeof(uint16_t));
+                return;
             case 32:
                 (*dest_var) = malloc(sizeof(uint32_t));
-                *(uint32_t*)(*dest_var) = *(uint32_t*)value;
-                break;
+                memcpy(*dest_var, value, sizeof(uint32_t));
+                return;
             case 64:
                 (*dest_var) = malloc(sizeof(uint64_t));
-                *(uint64_t*)(*dest_var) = *(uint64_t*)value;
-                break;
+                memcpy(*dest_var, value, sizeof(uint64_t));
+                return;
             
             default:
-                break;
+                fprintf(stderr, "this int size has no support : (%s)", s_type);
+                exit(EXIT_FAILURE);
+                return;
             }
         case 'i':
         sscanf(s_type,"%*[a-z]%hhu", &size);
             switch (size){
             case 8:
                 (*dest_var) = malloc(sizeof(int8_t));
-                *(int8_t*)(*dest_var) = *(int8_t*)value;
-                break;
+                memcpy(*dest_var, value, sizeof(int8_t));
+                return;
             case 16:
                 (*dest_var) = malloc(sizeof(uint16_t));
-                *(int16_t*)(*dest_var) = *(int16_t*)value;
-                break;
+                memcpy(*dest_var, value, sizeof(int16_t));
+                return;
             case 32:
                 (*dest_var) = malloc(sizeof(int32_t));
-                *(int32_t*)(*dest_var) = *(int32_t*)value;
-                break;
+                memcpy(*dest_var, value, sizeof(int32_t));
+                return;
             case 64:
                 (*dest_var) = malloc(sizeof(int64_t));
-                *(int64_t*)(*dest_var) = *(int64_t*)value;
-                break;
+                memcpy(*dest_var, value, sizeof(int64_t));
+                return;
             
             default:
-                break;
+                fprintf(stderr, "this int size has no support : (%s)", s_type);
+                exit(EXIT_FAILURE);
+                return;
             }
         case 'f':
         sscanf(s_type,"%*[a-z]%hhu", &size);
             switch (size){
-            case 4:
+            case 32:
                 (*dest_var) = malloc(sizeof(float));
-                *(float*)(*dest_var) = *(float*)value;
-                break;
-            case 8:
+                memcpy(*dest_var, value, sizeof(float));
+                return;
+            case 64:
                 (*dest_var) = malloc(sizeof(double));
-                *(double*)(*dest_var) = *(double*)value;
-                break;
-            case 16:
+                memcpy(*dest_var, value, sizeof(double));
+                return;
+            case 128:
                 (*dest_var) = malloc(sizeof(long double));
-                *(long double*)(*dest_var) = *(long double*)value;
-                break;
+                memcpy(*dest_var, value, sizeof(long double));
+                return;
             
             default:
-                break;
+                fprintf(stderr, "this int size has no support : (%s)", s_type);
+                exit(EXIT_FAILURE);
+                return;
             }
-    
         case 's':
-            (*dest_var) = malloc(strlen(s_type)*sizeof(uint8_t) + 1);
+            (*dest_var) = calloc(strlen((char*)value) + 1, sizeof(char));
             strcpy((char*)(*dest_var), (char*)value);
-            break;
+            return;
 
         case 'L':
             (*dest_var) = malloc(sizeof(LIST_t*));
             (*dest_var) = (LIST_t*)value;
-            break;
+            return;
 
         case 'D':
             (*dest_var) = malloc(sizeof(DICT_t*));
             (*dest_var) = (DICT_t*)value;
-            break;
-
+            return;
         
         default:
-            break;
+
+            (*dest_var) = NULL;
+            return;
     }
 }
 
 void list_print(LIST_t* src_list);
+
+void dict_print(DICT_t* src_dict);
 
 void print_value(void* value, const char* s_type){
     uint8_t size = 0;
@@ -271,6 +279,8 @@ void print_value(void* value, const char* s_type){
             default:
                 break;
             }
+
+            break;
         case 'i':
         sscanf(s_type,"%*[a-z]%hhu", &size);
             switch (size){
@@ -290,6 +300,8 @@ void print_value(void* value, const char* s_type){
             default:
                 break;
             }
+
+            break;
         case 'f':
         sscanf(s_type,"%*[a-z]%hhu", &size);
             switch (size){
@@ -297,7 +309,7 @@ void print_value(void* value, const char* s_type){
                 printf("%f", *(float*)value);
                 break;
             case 8:
-                printf("%f", *(double*)value);
+                printf("aqui %f", *(double*)value);
                 break;
             case 16:
                 printf("%Lf", *(long double*)value);
@@ -306,7 +318,8 @@ void print_value(void* value, const char* s_type){
             default:
                 break;
             }
-    
+
+            break;
         case 's':
             printf("%s", (char*)value);
             break;
@@ -396,11 +409,8 @@ void list_append(LIST_t** dest_list, const char* element_type, void* data){
         strcpy(last->element_type, element_type);
         return;
     }
-    
-    last->next = list_create();
-    last = last->next;
-    set_value(&last->data, element_type, data);
-    strcpy(last->element_type, element_type);
+
+    list_append(&last->next, element_type, data);
 }
 
 uint8_t list_copy(LIST_t** dest_list, LIST_t* src_list){
@@ -548,4 +558,172 @@ uint8_t list_len(LIST_t* src_list){
 
     return count;
 }
+
+//================================= DICTIONARY FUNCTIONS ================================
+
+DICT_t* dict_create(){
+
+    DICT_t *dict = (DICT_t*)calloc(1, sizeof(DICT_t));
+
+    dict->next = NULL;
+    dict->key = NULL;
+    dict->value = NULL;
+
+    strcpy(dict->k_type, "NUL");
+    strcpy(dict->v_type, "NUL");
+
+    return dict;
+}
+
+void dict_free(DICT_t** src_dict){
+
+    DICT_t *current = *src_dict, *next;
+
+    while(current != NULL){
+        next = current->next;
+        free(current->value);
+        free(current->key);
+        free(current);
+        current = next;
+    }
+
+    *src_dict = NULL;
+}
+
+void dict_print(DICT_t* src_dict){
+
+    if(src_dict == NULL){
+        printf("{}");
+        return;
+    }
+
+    printf("{");
+    while(src_dict != NULL){
+        print_value(src_dict->key, src_dict->k_type);
+        printf(":");
+        print_value(src_dict->value, src_dict->v_type);
+        printf(",");
+
+        src_dict = src_dict->next;
+    }
+    printf("\b}");
+}
+
+void dict_update(DICT_t** dest_dict, const char* k_type, const char* v_type, void* key, void* value){
+
+    if(dest_dict == NULL || *dest_dict == NULL){
+        *dest_dict = dict_create();
+        set_value(&(*dest_dict)->value, v_type, value);
+        set_value(&(*dest_dict)->key, k_type, key);
+        strcpy((*dest_dict)->k_type, k_type);
+        strcpy((*dest_dict)->v_type, v_type);
+        return;
+    }
+
+    DICT_t *current = *dest_dict;
+    while(current != NULL){
+        if(strcmp(current->k_type, k_type) == 0) if(compare_value(current->key, key, k_type)){
+            set_value(&(current->value), v_type, value);
+            strcpy(current->v_type, v_type);
+            return;
+        }  
+        if(current->next == NULL) break;
+        current = current->next;
+    }
+
+    dict_update(&current->next, k_type, v_type, key, value);
+
+    return;
+}
+
+uint8_t dict_copy(DICT_t** dest_dict, DICT_t* src_dict){
+    uint8_t count = 0;
+
+    if(src_dict == NULL) return count;
+
+    while(src_dict != NULL){
+        dict_update(dest_dict, src_dict->k_type, src_dict->v_type, src_dict->key, src_dict->value);
+        src_dict = src_dict->next; 
+        count++;
+    }
+
+    return count;
+}
+
+uint8_t dict_get(DICT_t* src_dict, const char* k_type, void* key, void** dest_val){
+
+    while(src_dict != NULL){
+        if(strcmp(src_dict->k_type, k_type) == 0 && compare_value(src_dict->key, key, src_dict->k_type)){
+            set_value(dest_val, src_dict->v_type, src_dict->value);
+            return 1;
+        }
+        src_dict = src_dict->next;
+    }
+
+    return 0;
+}
+
+uint8_t dict_values(LIST_t** dest_list, DICT_t* src_dict){
+
+    uint8_t count = 0;
+
+    if(src_dict == NULL) return count;
+
+    while (src_dict != NULL){
+        list_append(dest_list, src_dict->v_type, src_dict->value);
+        src_dict = src_dict->next;
+        count++;
+    }
+
+    return count;
+}
+
+uint8_t dict_keys(LIST_t** dest_list, DICT_t* src_dict){
+
+    uint8_t count = 0;
+
+    if(src_dict == NULL) return count;
+
+    while (src_dict != NULL){
+        list_append(dest_list, src_dict->k_type, src_dict->key);
+        src_dict = src_dict->next;
+        count++;
+    }
+
+    return count;
+}
+
+uint8_t dict_items(LIST_t** dest_list, DICT_t* src_dict){
+    LIST_t *sublist = NULL;
+    uint8_t count = 0;
+
+    while(src_dict != NULL){
+        list_append(&sublist, src_dict->k_type, src_dict->key);
+        list_append(&sublist, src_dict->v_type, src_dict->value);
+        list_append(dest_list, "LST", sublist);
+        sublist = NULL;
+        src_dict = src_dict->next;
+        count++;
+    }
+
+    return count;
+}
+
+void dict_fromkeys(DICT_t** dest_dict, LIST_t* src_keys, void* value, const char* v_type){
+
+    while(src_keys != NULL){
+        dict_update(dest_dict, src_keys->element_type, v_type, src_keys->data, value);
+    }
+}
+
+void dict_popitem(LIST_t** dest_item, DICT_t** src_dict, char* k_type, void *key){
+
+    if(*src_dict == NULL) return;
+
+    list_append(dest_item, "NUL", NULL);
+
+    dict_get(*src_dict , k_type, key, &((*dest_item)->data));
+    strcpy((*dest_item)->element_type,k_type);
+}
+
 #endif //c_structures end
